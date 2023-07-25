@@ -1,6 +1,6 @@
 from .endpoints import Endpoints
 from emoji import demojize
-
+vid = input("Enter your stream link: ")
 
 class Startup:
 
@@ -12,14 +12,11 @@ class Startup:
         cid = token["conversations"][0]["cid"]
 
         def formatMessage(username, message):
-            response = "[ttv] " + username + ': ' + message
+            response = "[yt] " + username + ': ' + message
             return demojize(response)
 
-        def sendMessage(val):
-            username = val.split('!')[0].replace(":", "")
-            message = val.split(':')[2]
-            # message formatting
+        def sendMessage(username,message):
             printable = formatMessage(username, message)
             endpoint.postNewChatMessage(cid, printable)
 
-        endpoint.startTwitchChat(sendMessage)
+        endpoint.startYoutubeChat(vid,sendMessage)

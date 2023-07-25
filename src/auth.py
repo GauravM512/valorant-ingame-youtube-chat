@@ -15,9 +15,10 @@ class Auth:
                 data = lockfile.read().split(":")
                 keys = ["name", "PID", "port", "password", "protocol"]
                 return dict(zip(keys, data))
-        except:
-            raise LockfileError(
-                "Valorant is not running. Open the game BEFORE you run this script.")
+        except FileNotFoundError:
+            raise LockfileError("Valorant is not running. Open the game BEFORE you run this script.")
+        except Exception as e:
+            raise LockfileError(f"Error reading the lockfile: {e}")
 
     def getHeaders(self):
         config = self.getConfig()

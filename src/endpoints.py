@@ -1,11 +1,8 @@
 import requests
 import urllib3
-import socket
-from .exceptions import ValorantAPIError
+from .exceptions import ValorantAPIError,YoutubeAPIError
 from .auth import Auth
-from .config import Config
-from .helpers import generateRandomNumbers
-
+import pytchat
 
 class Endpoints:
 
@@ -55,7 +52,7 @@ class Endpoints:
 
     def __verify_status_code(self, status_code):
         """Verify that the request was successful according to exceptions"""
-        if status_code in [404, 401, 500]:
+        if status_code in (404, 401, 500):
             raise ValorantAPIError(
                 "An invalid status code returned from game APIs")
 
@@ -70,27 +67,20 @@ class Endpoints:
         }
         return self.__gamePostRequest("/chat/v6/messages", data)
 
-    def startTwitchChat(self, callback):
+    def startYoutubeChat(self,vid:str,callback):
+        chat = pytchat.create(video_id=vid)
+        while chat.is_alive():
+            for c in chat.get().sync_items():
+                if c.type=='superChat':
+                    c.message = f"{c.message} [{c.amountString}]"
+                if c.author.isChatModerator:
+                    c.author.name = f"{c.author.name}[Mod]"
+                if c.author.isChatOwner:
+                    continue
+                if c.author.isChatSponsor:
+                    c.author.name = f"{c.author.name}[Sponsor]"
+                callback(c.author.name,c.message)
 
-        config = Config()
-        channelConfig = config.getChannel()
-        tokenConfig = config.getToken()
-
-        server = 'irc.chat.twitch.tv'
-        port = 6667
-        nickname = 'justinfan'+generateRandomNumbers()
-        channel = '#'+channelConfig
-
-        print(f'Joining "{channelConfig}" chat as "{nickname}"...')
-
-        sock = socket.socket()
-
-        sock.connect((server, port))
-        sock.send(f"PASS {tokenConfig}\n".encode('utf-8'))
-        sock.send(f"NICK {nickname}\n".encode('utf-8'))
-        sock.send(f"JOIN {channel}\n".encode('utf-8'))
-
-        print("Twitch chat for Valorant is running...")
-        while True:
-            resp = sock.recv(2048).decode('utf-8')
-            callback(resp)
+        else:
+            if chat.is_alive() == False:
+                raise YoutubeAPIError("Please check if the stream is live and the video id is correct")

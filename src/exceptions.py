@@ -21,10 +21,9 @@ class TokenFileError(Exception):
 
     pass
 
-
-class TwitchAPIError(Exception):
+class YoutubeAPIError(Exception):
     """
-    Raised whenever there's a problem while attempting to fetch the Riot lockfile.
+    Youtube Live Chat is Closed
     """
 
     pass
